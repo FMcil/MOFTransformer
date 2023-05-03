@@ -44,6 +44,58 @@ def get_model_and_datamodule(model_path, data_root, downstream=""):
 
     return model, data_iter
 
+@lru_cache
+def get_model(model_path, data_root, downstream="",**kwargs):
+    _config = config()
+    _config["visualize"] = True
+    _config["per_gpu_batchsize"] = 1
+    _config["data_root"] = data_root
+    _config["root_dataset"] = data_root
+    _config["load_path"] = model_path
+    _config["test_only"] = True
+    _config["use_transformer"] = True
+    _config["log_dir"] = "result_visualization"
+    _config["downstream"] = downstream
+
+    pl.seed_everything(_config["seed"])
+    model = Module(_config)
+    model.setup("test")
+    model.eval()
+    model.to("cpu")
+
+    dm = Datamodule(_config)
+    dm.setup("test")
+    data_iter = dm.test_dataloader()
+
+    return model, data_iter
+
+
+@lru_cache
+def get_datamodule(model_path, data_root, downstream="",split="test"):
+    _config = config()
+    _config["visualize"] = True
+    _config["per_gpu_batchsize"] = 1
+    _config["data_root"] = data_root
+    _config["root_dataset"] = data_root
+    _config["load_path"] = model_path
+    _config["test_only"] = True
+    _config["use_transformer"] = True
+    _config["log_dir"] = "result_visualization"
+    _config["downstream"] = downstream
+
+    pl.seed_everything(_config["seed"])
+
+    dm = Datamodule(_config)
+    dm.setup('test')
+    if split == "train":
+        dataloader = dm.train_dataloader()
+    if split == "val":
+        dataloader = dm.val_dataloader()
+    if split == "test":
+        dataloader = dm.test_dataloader()
+    
+    return dataloader
+
 
 @lru_cache
 def get_batch_from_index(data_iter, batch_id):

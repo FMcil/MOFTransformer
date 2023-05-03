@@ -66,6 +66,8 @@ class Datamodule(LightningDataModule):
             self.set_val_dataset()
 
         if stage in (None, "test"):
+            self.set_train_dataset()
+            self.set_val_dataset()
             self.set_test_dataset()
 
         self.collate = functools.partial(
